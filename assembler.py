@@ -15,13 +15,10 @@ def regToBin(reg):
 		print("ERROR: invalid register", reg)
 		return ""
 	
-	
 
-print('Running Lab3:')
+print('Running Divvy Assembler:')
 
 fileName = "./assembly.txt"
-
-
 w_file = open("Machine3.txt", "w")
 
 assembly = []
@@ -101,9 +98,7 @@ for line in assembly:
 		
 	w_file.write(opcode + fiveBits + "\t#" + line)
 
+# TODO create a file for LUT
+
 w_file.close()
-   
-
-      
-
 
