@@ -1,0 +1,15 @@
+move  5     # $acc is 5
+add   0 2   # $acc is 7
+sor   0 8   # $acc is 0b0111 & 0b1000 -> 0b1111 -> 15
+sand  0 1   # $acc is 1
+sgt   0 1   # $acc is 0
+seq   0 0   # $acc is 1
+shift 0 3   # $acc is 8
+shift 1 3   # $acc is 1
+neg   0 0   # $acc is 1111_1110
+store 0 $t0	# $acc to $t0
+store 1 $t1 # $acc to M[$t1] 
+load  0 $t10 #
+load  1 $t9
+be	  ELSE
+halt  0 0
