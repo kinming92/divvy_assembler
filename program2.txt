@@ -1,0 +1,185 @@
+#Assembly code
+move 4     # set the acc = 4
+store 0 $t0    # $t0 becomes 4
+load 1 $t0    # load data[$t0] into acc                     
+store 0 $t0        # store data[$t0] back to $t0
+#====>MQuotient  = data_mem[4] ---$t0
+
+move 5        # set the acc = 5
+store 0 $t1    # $t1 becomes 5                 
+load 1 $t1    # load data[$t1] into acc    , now acc  = data_mem[5]    
+store 0 $t1     # store acc = data_mem[$t1] back to $t1
+#====> LQuotient = data_mem[5] -----$t1
+
+move 2        # set the acc = 2
+store 0 $t2    #$t2 becomes 2                
+load 1 $t2    #load data[$t2] into acc    , now acc  = data_mem[2]
+store 0 $t2    #store acc = data_mem[2] to $t2
+#====>Mdivisor = data_mem[2] ------$t2
+
+move 0        #set acc = 0
+store  0 $t3    #set $t3 equal to 0
+#====>Ldivisor = 0x0------ $t3
+
+move 0        #set acc = 0
+store 0 $t4    # $t4 becomes 0
+load 1 $t4    #load data[$t4] into acc    , now acc  = data_mem[0]
+store 0 $t4    #store acc = data_mem[2] to $t2
+#====>Mdividend = data_mem[0] -----$t4
+
+move 1     #set acc = 1
+store 0 $t5     # $t5 becomes 1
+load 1 $t5    #load data[$t5] into acc    , now acc  = data_mem[1]
+store 0 $t5    #store acc = data_mem[1] to $t5
+#====>Ldividend = data_mem[1]  -----$t5 
+
+move 0        
+store 0 $t6    #====>Mremainder  = 0x0 --- $t6
+store 0 $t7    #====>Lremainder =  = 0x0 --- $t7
+
+WHILE_LOOP:
+
+load 0 $t2            #acc = $t2 = Mdivisor
+sgt 0 0                # if Mdivisor > 0
+bne    SKIP2COND        # branch to SKIP2COND if Mdivisor < 0
+load 0 $t3            # acc = $t3 = Ldivisor
+sgt 0 1                # if ( Ldivisor > 1)
+be    EXIT_WHILE_LOOP        #exit while loop if Ldivisor < 1
+#====>while ( Mdivisor > 0 ||   Ldivisor > 1 )
+
+SKIP2COND:
+
+# checking the if condition
+load 0 $t2            #acc = $t2 Mdivisor
+sgt 1 $t4            #Mdivisor > Mdividend
+bne     IF            # branch to if statment if the line above is true
+load 0 $t3            #acc = $t3 = Ldivisor 
+sgt 1 $t5            #get the result of Ldivisor > Ldividend
+store 0 $t13            # store the result to $t13
+load 0 $t3            #acc = Ldivisor
+seq 1 $t5            # get the result of Ldivisor == Ldividend
+store 0 $t12            # store the result to $12
+#====> Ldivisor >= Ldividend 
+
+load 0 $t13            #acc = the result of Ldivisor > Ldividend
+seq 0 1                 #compare and get  the result of Ldivisor > Ldividend with 1
+bne    NEXT_COND        # if acc !=  0 meaning Ldivisor > Ldividend return 1
+load 0 $t12            #acc = the result of  Ldivisor == Ldividend
+seq 0 1                #compare the result of Ldivisor == Ldividend with 1
+be     ELSE            # branch if equal to 0
+
+NEXT_COND:
+
+load 0 $t2            #acc = Mdivisor         
+seq 1 $t4            # get the result of Mdivisor == Mdividend
+be    ELSE            # branch if Mdivisor == Mdividend is 0
+#====> Mdivisor == Mdividend
+
+IF:
+
+load 0 $t1            #acc = LQuotient
+sand 0 16            #Quotient & 0x80
+shift 1  7            # acc = acc>>7
+store 0 $t8            # $t8 is the temp register
+load 0 $t1            # acc = LQuotient
+shift 0 1            # LQuotient << 1
+store 0 $t1            # $t1 becomes LQuotient << 1
+load 0 $t0            #acc = MQuotient
+shift 0 1            #MQuotient <<1
+sor 1 $t8            # MQuotient | temp
+store 0 $t0            # store the new value back to $t0
+
+ELSE:
+load 0 $t1            # acc = LQuotient
+sand 1 16            #acc = LQuotient & 0x80
+shift 1 7             # LQuotient >> 7
+store 0 $t8            # temp = acc
+
+#====>Temp = LQuotient & 0x80 
+#====>Temp = temp >> 7
+
+
+load 0 $t1            #acc = LQuotient 
+shift 0 1            # LQuotient << 1
+sor 0 1            #LQuotient | 0x1
+store 0 $t1            # $t1 = acc
+load 0 $t0            #acc = MQuotient
+shift 0 1            #MQuotient << 1
+sor 0 $t8            # MQuotient | temp
+store 0 $t0            #$t0 = acc
+
+load 0 $t3            #acc = Ldivisor 
+sgt 1 $t5            #Ldivisor > Ldividend
+bne     El2            # if not true branch to El2
+
+move 1             #acc  = 1
+store 1 $t8            # $t8 = temp = 1
+neg                 # neg temp
+add 1 $t4            # add temp with $t4 Mdividend 
+add 0 1            # acc add 1
+store 0 $t4            # $t4 = acc 
+
+El2:
+load 0 $t3            #acc = $t3 Ldivisor
+neg                 #neg Ldivisor
+add 1 $t5            #acc + Ldividend
+add 0 1            # acc + 1
+store 0 $t5            # $t5 = acc
+
+load 0 $t2            #acc = $t2 = Mdivisor
+neg                # neg Mdivisor
+add 1 $t4            #add acc + Mdividend
+add 0 1            #add acc + 1
+store 0 $t4            #$t4 = acc        
+
+move 0
+be	WHILE_LOOP        # jump to WHILE_LOOP
+
+EXIT_WHILE_LOOP:
+
+load 0 $t2            #acc = Mdivisor
+sand 0 1            # Mdivisor & 1
+shift 0 7            # acc << 7
+store 0 $t8            # store acc to temp register
+load 0 $t2            #acc = Mdivisor
+shift 1 1            #Mdivisor >> 1
+store 0 $t2            #store result back to $t2
+load 0 $ t3            #acc = Ldivisor
+shift 1 1             #Ldivisor >> 1
+sor 1 $t8            #Ldivisor | temp
+store 0 $t3            #store it back to $t3
+
+load 0 $t5            #acc = Ldividend
+store 0 $t7            #store acc to Lremainder
+load 0 $t4            #acc = Mdividend
+store 1 $t6            #store acc = Mremainder
+
+#MQuotient  = data_mem[4] ---$t0
+#LQuotient = data_mem[5] -----$t1
+
+#store MQuotient and LQuotient into data_mem
+move 4             #acc = 4
+store 0 $t13            #$t13 = 4
+load 0 $t0            #acc = MQuotient
+store 1 $t13            #data_men[4] = MQuotient
+
+move 5                #acc = 5
+store 0 $t13            #$t13 = 5
+load 0 $t1            #acc = LQuotient
+store 1 $t13            #data_mem[5]
+
+load 0 $t4 
+store 0 $t0
+load 0 $t5
+store 0 $t1
+# put $t4 into $t0 to fit program 1
+# put $t5 into $t1 to fit program 1
+
+load 0 $t3
+store 0 $t13
+load 0 $t2
+store 0 $t3
+load 0 $t13
+store 0 $t2
+#swap $t2 and $t3 to fit the input of program 1
+
