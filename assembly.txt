@@ -1,5 +1,7 @@
+ELSE:
 move  5     # $acc is 5
 add   0 2   # $acc is 7
+ELSE1:
 sor   0 8   # $acc is 0b0111 & 0b1000 -> 0b1111 -> 15
 sand  0 1   # $acc is 1
 sgt   0 1   # $acc is 0
@@ -12,4 +14,6 @@ store 1 $t1 # $acc to M[$t1]
 load  0 $t10 #
 load  1 $t9
 be	  ELSE
+be    END
 halt  0 0
+END:

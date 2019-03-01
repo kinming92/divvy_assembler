@@ -37,7 +37,7 @@ for line in assembly:
 
     strArray = line.split()
     instruction = strArray[0]
-    flag = strArray[1]
+    flag = strArray[1] if len(strArray) > 1 else 0
 
     opcode = ""
     fiveBits = "00000"
@@ -77,7 +77,7 @@ for line in assembly:
         # store the value of $acc into $t12
         machineCodes.append("1000"+"0"+regToBin("$t12")+"\n")
         # store the MSB of label LUT index into acc
-        machineCodes.append("0000 "+label+" MSB"+"\n")
+        machineCodes.append("00000 "+label+" MSB"+"\n")
         # shift-left the value in acc
         machineCodes.append("0110"+"0"+immToBin("4")+"\n")
         # or the LSB of label LUT index with the value in acc
@@ -96,7 +96,7 @@ for line in assembly:
     # Label found
     elif instruction[-1] == ":":
         labels.append(instruction[:-1])
-        labelAddrs.append(writeCount+1)
+        labelAddrs.append(writeCount)
         # don't wanna write any machine code for label
         continue
     else:
@@ -110,13 +110,15 @@ for line in assembly:
 finalMachineCodes = []
 for line in machineCodes:
     lineToAppend = line
-    splited = line.split()
-    frontMachineCode = splited[0]
-    label = splited[1]
-    if "MSB" in line:
-        lineToAppend = frontMachineCode + format(labels.index(label), "08b")[:4]
-    elif "LSB" in line:
-        lineToAppend = frontMachineCode + format(labels.index(label), "08b")[4:]
+    if "MSB" in line or "LSB" in line:
+        splited = line.split()
+        frontMachineCode = splited[0]
+        label = splited[1]
+        if "MSB" in line:
+            lineToAppend = frontMachineCode + format(labels.index(label), "08b")[:4] + "\n"
+
+        elif "LSB" in line:
+            lineToAppend = frontMachineCode + format(labels.index(label), "08b")[4:] + "\n"
     finalMachineCodes.append(lineToAppend)
 
 with open(wFileName, "w") as wFile:
@@ -126,9 +128,9 @@ with open(wFileName, "w") as wFile:
 # TODO create a file for LUT
 lutFileName = "lut.txt"
 with open(lutFileName, "w") as lutFile:
-    for i, label in enumerate(label):
+    for i, label in enumerate(labels):
         addr = labelAddrs[i]
-        lutFile.write(addr+"\n")
+        lutFile.write(format(addr, "016b")+"\n")
 
 
 
