@@ -78,7 +78,7 @@ be    ELSE            # branch if Mdivisor == Mdividend is 0
 IF:
 
 load 0 $t1            #acc = LQuotient
-sand 0 16            #Quotient & 0x80
+# sand 0 16            #Quotient & 0x80
 shift 1  7            # acc = acc>>7
 store 0 $t8            # $t8 is the temp register
 load 0 $t1            # acc = LQuotient
@@ -91,7 +91,7 @@ store 0 $t0            # store the new value back to $t0
 
 ELSE:
 load 0 $t1            # acc = LQuotient
-sand 1 16            #acc = LQuotient & 0x80
+# sand 1 16            #acc = LQuotient & 0x80
 shift 1 7             # LQuotient >> 7
 store 0 $t8            # temp = acc
 
@@ -105,7 +105,7 @@ sor 0 1            #LQuotient | 0x1
 store 0 $t1            # $t1 = acc
 load 0 $t0            #acc = MQuotient
 shift 0 1            #MQuotient << 1
-sor 0 $t8            # MQuotient | temp
+# sor 0 $t8            # MQuotient | temp
 store 0 $t0            #$t0 = acc
 
 load 0 $t3            #acc = Ldivisor 
@@ -144,7 +144,7 @@ store 0 $t8            # store acc to temp register
 load 0 $t2            #acc = Mdivisor
 shift 1 1            #Mdivisor >> 1
 store 0 $t2            #store result back to $t2
-load 0 $ t3            #acc = Ldivisor
+load 0 $t3            #acc = Ldivisor
 shift 1 1             #Ldivisor >> 1
 sor 1 $t8            #Ldivisor | temp
 store 0 $t3            #store it back to $t3

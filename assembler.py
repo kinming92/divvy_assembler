@@ -1,5 +1,9 @@
 # imm : str
 def immToBin(imm, numOfBits=4):
+    try:
+        int(imm)
+    except ValueError:
+        exit("immediate value is not valid for "+str(immToBin.instruction))
     immBin = format(int(imm), "0"+str(numOfBits)+"b") 
     return immBin
 
@@ -8,14 +12,14 @@ def regToBin(reg):
     if reg[:2] == "$t":
         number = int(reg[2:])
         if number > 13:
-            exit("ERROR: invalid register"+reg)
+            exit("ERROR: invalid register for \""+regToBin.instruction+"\"")
         return format(number, "04b")
     elif reg == "$acc":
         return "1110"
     elif reg == "$cout":
         return "1111"
     else:
-        exit("ERROR: invalid register"+reg)
+        exit("ERROR: invalid register for \""+regToBin.instruction+"\"")
 
 import sys
 
@@ -46,6 +50,8 @@ labelAddrs = []
 writeCount = 0
 machineCodes = []
 for i, line in enumerate(assembly):
+    immToBin.instruction = line
+    regToBin.instruction = line
 
     strArray = line.split()
     instruction = strArray[0]

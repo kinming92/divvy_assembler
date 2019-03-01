@@ -140,7 +140,7 @@ store 0  $t4
 load 0  $t6
 add 0  1
 store 0  $t6
-while (16 > sB)
+# while (16 > sB)
 BackToPad:
 move 16
 sgt 1  $t6
