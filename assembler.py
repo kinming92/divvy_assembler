@@ -17,14 +17,24 @@ def regToBin(reg):
     else:
         exit("ERROR: invalid register"+reg)
 
+import sys
 
 print('Running Divvy Assembler:')
 
 fileName = "./assembly.txt"
-wFileName = "Machine3.txt"
+wFileName = "machine_code.txt"
+
+if len(sys.argv) == 2:
+    fileName = sys.argv[1]
+elif len(sys.argv) == 3:
+    fileName = sys.argv[1]
+    wFileName = sys.argv[2]
+else:
+    exit("The number of argument is incorrect\n"+
+        "Usage: python assembler.py [assemblyFileName.txt] (outputFileName.txt)")
 
 assembly = []
-# get assembly without comments or black lines
+# get assembly without comments or blank lines
 with open(fileName, "r") as f:
     for line in f.readlines():
         splited = line.split()
@@ -135,3 +145,4 @@ with open(lutFileName, "w") as lutFile:
 
 
 
+print('Ran Divvy Assembler:')
