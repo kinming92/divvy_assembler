@@ -1,0 +1,95 @@
+# assign mData to $t0
+move    16    
+store    0    $t0
+load    1    $t0
+store    0    $t0
+
+# assign lData to $t1
+move    17    
+store    0    $t1
+load    1    $t1
+store    0    $t1    
+
+# set 1 to $t2 as divisor
+move    0
+store    0    $t2    
+
+# set 0xFF to $t3 as mQuotient
+#move    0xF
+shift    0    4
+add    0    0xF
+store    0    $t3
+
+# set 0xFF to $t4 as lQuotient 
+store    0    $t4
+
+# set 0xFF to $t5 as deciQuotient 
+store    0    $t5
+
+while:
+# increment divisor
+move    1
+add    1    $t2
+store    0    $t2
+
+# set mQuotientPrev as $t6
+load    0    $t3
+store    0    $t6
+
+# set lQuotientPrev as $t7
+load    0    $t4
+store    0    $t7
+
+# set deciQuotientPrev as $t8
+load    0    $t5
+store    0    $t8
+
+# store mData to data_memory[0] to pass into program2
+move    0
+store    0    $t13
+load    0    $t0
+store    1    $t13
+
+# store lData to data_memory[1] to pass into program2
+move    1
+store    0    $t13
+load    0    $t1
+store    1    $t13
+
+# store divisor to data_memory[2] to pass into program2
+move    2
+store    0    $t13
+load    0    $t2
+store    1    $t13
+
+# RUN PROGRAM2
+
+# load mQuotient into $t3
+move    4
+store    0    $t3
+load    1    $t3
+store    0    $t3
+
+# load lQuotient into $t4
+move    5    
+store    0    $t4
+load    1    $t4
+store    0    $t4
+
+# deciQuotient into $t5
+move    6
+store    0    $t3
+load    1    $t3
+store    0    $t3
+
+# set lQuotient > divisor to $t13
+load    0    $t4
+sgt    1    $t2
+store    0    $t13
+
+# set (mQuotient != 0 ||  lQuotient > divisor) to $acc
+load    0    $t3
+seq    0    0
+add    0    -1
+sor    1    $t13
+bne    while
