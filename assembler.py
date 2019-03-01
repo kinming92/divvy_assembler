@@ -6,14 +6,16 @@ def immToBin(imm, numOfBits=4):
 def regToBin(reg):
     # $t0 to $13: 0000 to 1101
     if reg[:2] == "$t":
-        return format(int(reg[2:]), "04b")
+        number = int(reg[2:])
+        if number > 13:
+            exit("ERROR: invalid register"+reg)
+        return format(number, "04b")
     elif reg == "$acc":
         return "1110"
     elif reg == "$cout":
         return "1111"
     else:
-        print("ERROR: invalid register", reg)
-        return ""
+        exit("ERROR: invalid register"+reg)
 
 
 print('Running Divvy Assembler:')
@@ -33,7 +35,7 @@ labels = []
 labelAddrs = []
 writeCount = 0
 machineCodes = []
-for line in assembly:
+for i, line in enumerate(assembly):
 
     strArray = line.split()
     instruction = strArray[0]
@@ -100,8 +102,7 @@ for line in assembly:
         # don't wanna write any machine code for label
         continue
     else:
-        print("instruction is invalid", instruction)
-        exit()
+        exit("invalid instruction at "+str(i+1)+" : "+instruction)
 
     machineCodes.append(opcode + fiveBits + "\t#" + line)
     writeCount += 1
