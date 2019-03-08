@@ -38,7 +38,7 @@ else:
         "Usage: python assembler.py [assemblyFileName.txt] (outputFileName.txt)")
 
 assembly = []
-# get assembly without comments or blank lines
+# get assembly code without comments or blank lines
 with open(fileName, "r") as f:
     for line in f.readlines():
         splited = line.split()
@@ -120,7 +120,7 @@ for i, line in enumerate(assembly):
     else:
         exit("invalid instruction at "+str(i+1)+" : "+instruction)
 
-    machineCodes.append(opcode + fiveBits + "\t#" + line)
+    machineCodes.append(opcode + fiveBits + "\t// " + line)
     writeCount += 1
 
 
