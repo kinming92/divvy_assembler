@@ -1,0 +1,17 @@
+move 5
+store 0 $t0		//$t0 is 5
+move 6
+store 1 $t0		//M[0] is 6
+move 32
+store 0 $t0		//$t0 is 32
+store 1 $t1		//M[1] is 32
+load 0 $t0		//acc is 5
+load 1 $t1		//acc is 32	
+bne else		// do not branch here
+add 1 $t0		// acc is 64 in decimal
+move 0			//acc is 0
+be	else		//branch to else 
+neg				
+add 1 $t0
+else:
+halt
