@@ -42,7 +42,7 @@ assembly = []
 with open(fileName, "r") as f:
     for line in f.readlines():
         splited = line.split()
-        if len(splited) and splited[0][0] != "//":
+        if len(splited) and splited[0][0:2] != "//":
             assembly.append(line)
 
 labels = []
