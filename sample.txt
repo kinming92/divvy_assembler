@@ -17,11 +17,11 @@ add 1 $t0
 else:
 halt
 
-sum = 0
-while(i<16){
-	sum += 10;
-	i++;
-}
+// sum = 0
+// while(i<16){
+// 	sum += 10;
+// 	i++;
+// }
 
 move 0
 store 0 $t0  	//i = 0
