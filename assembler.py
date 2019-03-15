@@ -93,17 +93,17 @@ for i, line in enumerate(assembly):
         opcode = ["1001", "1010"][index]
 
         # store the value of $acc into $t12
-        machineCodes.append("1000"+"0"+regToBin("$t12")+"\n")
+        machineCodes.append("1000"+"0"+regToBin("$t12")+"\t// [branch] store the value of $acc into $t12\n")
         # store the MSB of label LUT index into acc
-        machineCodes.append("00000 "+label+" MSB"+"\n")
+        machineCodes.append("00000 "+label+" MSB\t// [branch] store the MSB of label LUT index into acc\n")
         # shift-left the value in acc
-        machineCodes.append("0110"+"0"+immToBin("4")+"\n")
+        machineCodes.append("0110"+"0"+immToBin("4")+"\t// [branch] shift-left the value in acc\n")
         # or the LSB of label LUT index with the value in acc
-        machineCodes.append("0010"+"0 "+label+" LSB\n")
+        machineCodes.append("0010"+"0 "+label+" LSB\t// [branch] or the LSB of label LUT index with the value in acc\n")
         # store the value of acc into $t13
-        machineCodes.append("1000"+"0"+regToBin("$t13")+"\n")
+        machineCodes.append("1000"+"0"+regToBin("$t13")+"\t// [branch] store the value of acc into $t13\n")
         # restore acc
-        machineCodes.append("0111"+"0"+regToBin("$t12")+"\n")
+        machineCodes.append("0111"+"0"+regToBin("$t12")+"\t// [branch] restore acc\n")
         writeCount += 6
 
         fiveBits = "0"+regToBin("$t13")
@@ -130,12 +130,13 @@ for line in machineCodes:
     if "MSB" in line or "LSB" in line:
         splited = line.split()
         frontMachineCode = splited[0]
+        comment = " ".join(splited[3:])
         label = splited[1]
         if "MSB" in line:
-            lineToAppend = frontMachineCode + format(labels.index(label), "08b")[:4] + "\n"
+            lineToAppend = frontMachineCode + format(labels.index(label), "08b")[:4] + "\t" + comment + "\n"
 
         elif "LSB" in line:
-            lineToAppend = frontMachineCode + format(labels.index(label), "08b")[4:] + "\n"
+            lineToAppend = frontMachineCode + format(labels.index(label), "08b")[4:] + "\t" + comment + "\n"
     finalMachineCodes.append(lineToAppend)
 
 with open(wFileName, "w") as wFile:
