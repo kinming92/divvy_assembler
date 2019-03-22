@@ -1,0 +1,75 @@
+// BASIC IDEA
+// quotient = program1(divisor);
+// ans = 0;
+// while (dividend > 0) {
+//     ans += quotient;
+//     dividend--;
+// }
+// return ans
+
+// MORE PRECISE VERSION
+// char mostSigDividend, leastSigDividend;
+// char mostSigQuotient, leastSigQuotient, decimalPtQuotient1, decimalPtQuotient2;
+// char quotient1, quotient2 = program1(divisor);
+// // extract the leftmost bit
+// char one = quotient1 | 0x80;
+// // shift to left by 1 as we extracted it already
+// quotient1 <<= 1;
+// // transfer left most bit of quotient2 to the right most of quotient1
+// quotient1 |= (quotient2 >> 7));
+// // shift to left by 1 as we extracted it already
+// quotient2 <<= 1;
+// char carryOut = 0;
+// 
+// while (mostSigDividend > 0 || leastSigDividend > 0) {
+//     if ((decimalPtQuotient2 + quotient2) < quotient2) carryOut = 1;
+//     else carryOut = 0;
+//     decimalPtQuotient2 += quotient2;
+//     if ((decimalPtQuotient1 + carryOut) < carryOut) carryOut = 1;
+//     else carryOut = 0;
+//     decimalPtQuotient1 += carryOut;
+//     if ((decimalPtQuotient1 + quotient1) < quotient1) carryOut = 1;
+//     else carryOut = 0;
+//     decimalPtQuotient1 += quotient1;
+//     if ((leastSigQuotient + carryOut) < carryOut) carryOut = 1;
+//     else carryOut = 0;   
+//     leastSigQuotient += carryOut;
+//     mostSigQuotient += carryOut;
+//     if (leastSigDividend > 0)
+//         leastSigDividend -= 1;
+//     else 
+//         mostSigQuotient -= 1;
+//         leastSigDividend = 0xFF;
+//         
+// }
+// return mostSigQuotient, leastSigQuotient, decimalPtQuotient1;
+
+// MAPPING
+// M[0] $t0 most significant dividend
+// M[1] $t1 least significant dividend
+// M[2] $t2 divisor
+// M[4] $t3 most significant quotient
+// M[5] $t4 least significant quotient
+// M[6] $t5 decimal point quotient
+
+// SET PARAMETER FOR PROGRAM 1
+    // M[8] = 0
+    move    8
+    store   0   $t10
+    move    0
+    store   1   $t10
+
+    // M[9] = divisor M[2]
+    move    9
+    store   0   $t10
+    move    2
+    store   0   $t11
+    load    1   $t11
+    store   1   $t10
+
+// RUN PROGRAM 1
+
+// FINISH RUNNING PROGRAM 1
+
+// MULTIPLICATION
+
