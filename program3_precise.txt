@@ -10,7 +10,7 @@
 // 		divisor++;
 // 		quotient = divide(number, divisor);
 // } while (quotient > divisor) 
-// return (divisor-quotient) > (prevQuotient - prevDivisor) ? prevDivisor : divisor;
+// return (divisor-quotient) >= (prevQuotient - prevDivisor) ? prevDivisor : divisor;
 
 
 // // C-code with an input represented in two separate parsts; most significant and least significant 8 bits
@@ -47,7 +47,7 @@
 // else borrowIn = 0;
 // prevLeastSigDiff = prevLeastSigQuotient - prevDivisor + borrowIn;
 // 
-// if (prevLeastSigDiff > leastSigDiff)
+// if (prevLeastSigDiff >= leastSigDiff)
 //     return divisor;
 // else
 //     return prevDivisor;
@@ -109,7 +109,7 @@ DoWhile:
     // if (divisor($t2) == 0) return 0xFF
         move    0
         seq     1   $t2
-        bne     Continue
+        be     Continue
         // M[18] = 0xFF
         move    18
         store   0   $t10
@@ -257,7 +257,7 @@ store   0   $t3
 // if (decimalPtQuotient($t5) > 0) borrowOut($t6) = 1;
     load    0   $t5
     sgt     0   0
-    bne     Else1
+    be     Else1
     move    1
     store   0   $t6
     move    0
@@ -300,7 +300,7 @@ End1:
 // if (prevDecimalPtQuotient($t8) > 0) borrowIn($t6) = 1;
     load    0   $t8
     sgt     0   0
-    bne     Else2
+    be     Else2
     move    1
     store   0   $t6
     move    0
@@ -335,10 +335,12 @@ End2:
     store   0   $t1
 
 
-// if (prevLeastSigDiff($t1) > leastSigDiff($t0)) return divisor($t2);
+// if (prevLeastSigDiff($t1) >= leastSigDiff($t0)) return divisor($t2);
     load    0   $t1
     sgt     1   $t0
-    bne     Else3
+    be     Else3
+    seq     1   $t0
+    be     Else3
     // M[18] = divisor($t2)
     move    18
     store   0   $t10
