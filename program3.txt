@@ -16,14 +16,10 @@
 // char mostSig, leastSig; 
 // char divisor;
 // char mostSigQuotient, leastSigQuotient, decimalPtQuotient = 0xFF;
-// char prevMostSigQuotient, prevLeastSigQuotient, prevDecimalPtQuotient;
 // 
 // divisor = 0;
 // do {
 //      divisor++;
-//      prevMostSigQuotient = mostSigQuotient;
-//      prevLeastSigQuotient = leastSigQuotient;
-//      prevDecimalPtQuotient = decimalPtQuotient;
 //      mostSigQuotient, leastSigQuotient, decimalQuotient = divide(mostSig, leastSig, divisor);
 // } while (mostSigQuotient > 0 || leastSigQuotient > divisor || (leastSigQuotient == divisor && decimalPtQuotient > 0) );
 // return divisor;
@@ -33,29 +29,10 @@
 // mostSigQuotient:         $t3     M[23]
 // leastSigQuotient:        $t4     M[24]
 // decimalPtQuotient:       $t5     M[25]
-// prevMostSigQuotient:     $t6     M[26]
-// prevLeastSigQuotient:    $t7     M[27]
-// prevDecimalPtQuotient:   $t8     M[28]
 
-// mostSig
 // divisor = 0
 move    0
 store   0   $t2
-
-// mostSigQuotient($t3) = 0xFF
-move    0
-neg     
-store   0   $t3  
-
-// leastSigQuotient($t4) = 0xFF
-move    0
-neg     
-store   0   $t4
-
-// decimalPtQuotient($t5) = 0xFF
-move    0
-neg     
-store   0   $t5
 
 // SET PARAMETER FOR PROGRAM 2
 // M[0] = M[16](mostSig)
@@ -75,17 +52,6 @@ load    1   $t11
 store   1   $t10
 
 DoWhile:
-    // prevMostSigQuotient($t6) = mostSigQuotient($t3);
-    load    0   $t3
-    store   0   $t6
-
-    // prevLeastSigQuotient($t7) = leastSigQuotient($t4);
-    load    0   $t4
-    store   0   $t7
-
-    // prevDecimalPtQuotient($t8) = decimalPtQuotient($t5);
-    load    0   $t5
-    store   0   $t8
 
     // divisor++
     load    0   $t2
@@ -105,24 +71,6 @@ DoWhile:
         load    0   $t2
         store   1   $t10
 
-        // save prevMostSigQuotient($t6)
-        move    6
-        store   0   $t10
-        load    0   $t6
-        store   1   $t10
-
-        // save prevLeastSigQuotient($t7)
-        move    7
-        store   0   $t10
-        load    0   $t7
-        store   1   $t10
-
-        // save prevDecimalPtQuotient($t8)
-        move    8
-        store   0   $t10
-        load    0   $t8
-        store   1   $t10
-
     // RUN PROGRAM 2 
 
     // FINISH RUNNING PROGRAM 2
@@ -133,24 +81,6 @@ DoWhile:
         store   0   $t10
         load    1   $t10
         store   0   $t2
-
-        // restore prevMostSigQuotient($t6)
-        move    6
-        store   0   $t10
-        load    1   $t10
-        store   0   $t6
-
-        // restore revLeastSigQuotient($t7)
-        move    7
-        store   0   $t10
-        load    1   $t10
-        store   0   $t7
-
-        // restore revDecimalPtQuotient($t8)
-        move    8
-        store   0   $t10
-        load    1   $t10
-        store   0   $t8
 
     // store result from program 2
         // mostSigQuotient($t3) = M[4]
