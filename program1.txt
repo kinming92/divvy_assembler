@@ -67,7 +67,7 @@ seq 1  $t3 // $acc = (nL == dL)
 sor 1  $t10 // $acc = (nL >= dL)
 sand 1  $t9 // $acc = (nM == dM) && (nL >= dL)
 sor 1  $t8 // $acc = (nM > dM) || ((nM == dM) && (nL >= dL))
-be Increment // THIS WAS bez!!! Should this be bne or be?
+be Increment
 SkipBorrow:
 // if (dL > nL)
 load 0  $t3
@@ -106,6 +106,15 @@ store 0  $cout
 load 0  $t1
 shift 0  1
 store 0  $t1
+// if (nM == 128 && sB == 15) prep exit 
+move 1
+shift 0  7
+seq 1  $t0
+store 0  $t8
+load 0  $t6
+seq 0  15
+sand 1  $t8
+bne RoundOff
 // nM = (nM << 1) | cout
 load 0  $t0
 shift 0  1
@@ -132,7 +141,7 @@ sand 1  $t8 // $acc = (16 > sB) && (nM > 0 || nL > 0)
 bne Divide
 SkipPad:
 load 0  $t8
-be Exit
+be RoundOffCheck
 Pad:
 // cout = rL >> 7
 load 0  $t5
@@ -176,6 +185,7 @@ sor 1  $t10 // $acc = (nL >= dL)
 sand 1  $t9 // $acc = (nM == dM) && (nL >= dL)
 sor 1  $t8 // $acc = (nM > dM) || ((nM == dM) && (nL >= dL))
 be Exit
+RoundOff:
 load 0  $t5
 add 0  1
 store 0 $t5
@@ -192,6 +202,7 @@ load 0  $t5
 store 1  $t9
 halt
 DivZero:
+// M[4] = M[5] = M[6] = 0
 move 10
 store 0  $t4
 add 0  1
