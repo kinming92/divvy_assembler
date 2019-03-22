@@ -23,7 +23,7 @@ load 1  $t3 # acc = M[9]
 store 0  $t3 # dL = M[9]
 SkipDivide:
 sgt 0  0 # $acc = (M[9] > 0)
-sor 1  $t8 # $acc = (nM > 0 || nL > 0)
+sor 1  $t8 # $acc = (dM > 0 || dL > 0)
 be Pad # if input == $acc == 0  go return 0
 Divide:
 # Shift result
