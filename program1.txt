@@ -21,7 +21,15 @@ move 9 // acc = 9
 store 0  $t3 // dL = 9
 load 1  $t3 // acc = M[9]
 store 0  $t3 // dL = M[9]
+SkipAll:
+seq 0  0
+store 0  $cout
+load 0  $t2
+seq 0  0
+seq 1  $cout
+bne DivZero
 SkipDivide:
+load 0  $t3
 sgt 0  0 // $acc = (M[9] > 0)
 sor 1  $t8 // $acc = (dM > 0 || dL > 0)
 be Pad // if input == $acc == 0  go return 0
@@ -159,4 +167,14 @@ move 11
 store 0  $t9
 load 0  $t5
 store 1  $t9
+halt
+DivZero:
+move 10
+store 0  $t4
+add 0  1
+store 0  $t5
+move 0
+neg
+store 1  $t4
+store 1  $t5
 halt
