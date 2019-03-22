@@ -6,7 +6,7 @@
 // char prevDivisor;
 // do {
 // 		prevQuotient = quotient
-//      prevDivisor = divisor;
+//  	prevDivisor = divisor;
 // 		divisor++;
 // 		quotient = divide(number, divisor);
 // } while (quotient > divisor) 
