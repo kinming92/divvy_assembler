@@ -1,157 +1,157 @@
-#In assembly
-#nM: $t0 nL: $t1 dM: $t2 dL: $t3 rM: $t4 rL: $t5
-#sB:$t6 cout: $cout
-# Initialize variables
+//In assembly
+//nM: $t0 nL: $t1 dM: $t2 dL: $t3 rM: $t4 rL: $t5
+//sB:$t6 cout: $cout
+// Initialize variables
 
-move 0 # acc = 0
-store 0 $t0 # nM = 0
-store 0 $t4 # rM = 0
-store 0 $t5 # rL = 0
-store 0 $t6 # sB = 0
-store 0 $cout # cout = 0
-move 1 #acc = 1
-store 0  $t1 # nL = 1
-move 8 # acc = 8
-store 0  $t2 # dM = 8
-load 1  $t2 # acc = M[8]
-store 0  $t2 # dM = M[8]
+move 0 // acc = 0
+store 0 $t0 // nM = 0
+store 0 $t4 // rM = 0
+store 0 $t5 // rL = 0
+store 0 $t6 // sB = 0
+store 0 $cout // cout = 0
+move 1 //acc = 1
+store 0  $t1 // nL = 1
+move 8 // acc = 8
+store 0  $t2 // dM = 8
+load 1  $t2 // acc = M[8]
+store 0  $t2 // dM = M[8]
 sgt 0  0
-store 0  $t8 # $t8 = (M[8] > 0)
-move 9 # acc = 9
-store 0  $t3 # dL = 9
-load 1  $t3 # acc = M[9]
-store 0  $t3 # dL = M[9]
+store 0  $t8 // $t8 = (M[8] > 0)
+move 9 // acc = 9
+store 0  $t3 // dL = 9
+load 1  $t3 // acc = M[9]
+store 0  $t3 // dL = M[9]
 SkipDivide:
-sgt 0  0 # $acc = (M[9] > 0)
-sor 1  $t8 # $acc = (dM > 0 || dL > 0)
-be Pad # if input == $acc == 0  go return 0
+sgt 0  0 // $acc = (M[9] > 0)
+sor 1  $t8 // $acc = (dM > 0 || dL > 0)
+be Pad // if input == $acc == 0  go return 0
 Divide:
-# Shift result
-# cout = rL >> 7
+// Shift result
+// cout = rL >> 7
 load 0  $t5
 shift 1  7
 store 0  $cout
-# rL = rL << 1
+// rL = rL << 1
 load 0  $t5
 shift 0  1
 store 0  $t5
-# rM = (rM << 1) | cout
+// rM = (rM << 1) | cout
 load 0  $t4
 shift 0  1
 sor 1  $cout
 store 0  $t4
-# if (nM > dM || (nM == dM && nL >= dL) )
+// if (nM > dM || (nM == dM && nL >= dL) )
 SkipSubtract:
-# $t8 = (nM > dM)
+// $t8 = (nM > dM)
 load 0  $t0
 sgt 1  $t2
 store 0  $t8
-# $t9 = (nM == dM)
+// $t9 = (nM == dM)
 load 0  $t0
 seq 1  $t2
 store 0  $t9
-# $t10 = (nL > dL)
+// $t10 = (nL > dL)
 load 0  $t1
 sgt 1  $t3
 store 0  $t10
 load 0  $t1
-seq 1  $t3 # $acc = (nL == dL)
-sor 1  $t10 # $acc = (nL >= dL)
-sand 1  $t9 # $acc = (nM == dM) && (nL >= dL)
-sor 1  $t8 # $acc = (nM > dM) || ((nM == dM) && (nL >= dL))
-be Increment # THIS WAS bez!!! Should this be bne or be?
+seq 1  $t3 // $acc = (nL == dL)
+sor 1  $t10 // $acc = (nL >= dL)
+sand 1  $t9 // $acc = (nM == dM) && (nL >= dL)
+sor 1  $t8 // $acc = (nM > dM) || ((nM == dM) && (nL >= dL))
+bne Increment // THIS WAS bez!!! Should this be bne or be?
 SkipBorrow:
-# if (dL > nL)
+// if (dL > nL)
 load 0  $t3
 sgt 1  $t1
 be Subtract
 Borrow:
-# nM = nM – 1
+// nM = nM – 1
 move 1
 neg
 add 1  $t0
 add 0  1
 store 0  $t0
 Subtract:
-# nL = nL - dL
+// nL = nL - dL
 load 0  $t3
 neg
 add 1  $t1
 add 0  1
 store 0  $t1
-# nM = nM - dM
+// nM = nM - dM
 load 0  $t2
 neg
 add 1  $t0
 add 0  1
 store 0  $t0
-# rL = rL + 1
+// rL = rL + 1
 Increment:
-# cout = nL >> 7
+// cout = nL >> 7
 load 0  $t1
 shift 1  7
 store 0  $cout
-# nL = nL << 1
+// nL = nL << 1
 load 0  $t1
 shift 0  1
 store 0  $t1
-# nM = (nM << 1) | cout
+// nM = (nM << 1) | cout
 load 0  $t0
 shift 0  1
 sor 1  $cout
 store 0  $t0
-# sB = sB + 1
+// sB = sB + 1
 load 0  $t6
 add 0  1
 store 0  $t6
-# while ( (16 > sB) && (nM > 0 || nL > 0) )
+// while ( (16 > sB) && (nM > 0 || nL > 0) )
 BackToDivide:
-# $t8 = (16 > sB)
+// $t8 = (16 > sB)
 move 16
 sgt 1  $t6
 store 0  $t8
-# $t9 = (nM > 0)
+// $t9 = (nM > 0)
 load 0  $t0
 sgt 0  0
 store 0  $t9
 load 0  $t1
-sgt 0  0 # $acc = (nL > 0)
-sor 1  $t9 # $acc = (nM > 0 || nL > 0)
-sand 1  $t8 # $acc = (16 > sB) && (nM > 0 || nL > 0)
+sgt 0  0 // $acc = (nL > 0)
+sor 1  $t9 // $acc = (nM > 0 || nL > 0)
+sand 1  $t8 // $acc = (16 > sB) && (nM > 0 || nL > 0)
 bne Divide
 SkipPad:
 load 0  $t8
 be Exit
 Pad:
-# cout = rL >> 7
+// cout = rL >> 7
 load 0  $t5
 shift 1  7
 store 0  $cout
-# rL = rL << 1
+// rL = rL << 1
 load 0  $t5
 shift 0  1
 store 0  $t5
-# rM = (rM << 1) | cout
+// rM = (rM << 1) | cout
 load 0  $t4
 shift 0  1
 sor 1  $cout
 store 0  $t4
-# sB = sB + 1
+// sB = sB + 1
 load 0  $t6
 add 0  1
 store 0  $t6
-# while (16 > sB)
+// while (16 > sB)
 BackToPad:
 move 16
 sgt 1  $t6
 bne Pad
 Exit:
-# M[10] = rM
+// M[10] = rM
 move 10
 store 0  $t8
 load 0  $t4
 store 1  $t8
-# M[11] = rL
+// M[11] = rL
 move 11
 store 0  $t9
 load 0  $t5
