@@ -3,12 +3,14 @@
 // int divisor = 0;
 // float quotient = FLOAT_MAX;
 // char prevQuotient;
+// char prevDivisor;
 // do {
-// 		divisor++;
 // 		prevQuotient = quotient
+//      prevDivisor = divisor;
+// 		divisor++;
 // 		quotient = divide(number, divisor);
 // } while (quotient > divisor) 
-// return (divisor-quotient) > (prevQuotient - (divisor-1)) ? divisor-1 : divisor;
+// return (divisor-quotient) > (prevQuotient - prevDivisor) ? prevDivisor : divisor;
 
 
 // // C-code with an input represented in two separate parsts; most significant and least significant 8 bits
