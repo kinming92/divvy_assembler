@@ -59,7 +59,7 @@ seq 1  $t3 // $acc = (nL == dL)
 sor 1  $t10 // $acc = (nL >= dL)
 sand 1  $t9 // $acc = (nM == dM) && (nL >= dL)
 sor 1  $t8 // $acc = (nM > dM) || ((nM == dM) && (nL >= dL))
-bne Increment // THIS WAS bez!!! Should this be bne or be?
+be Increment // THIS WAS bez!!! Should this be bne or be?
 SkipBorrow:
 // if (dL > nL)
 load 0  $t3
