@@ -164,9 +164,284 @@ DoWhile:
     load    0   $t2
     store   1   $t10
     
-    // RUN PROGRAM 2 
+//////////////////////////////////////////////////////////////////////////////
+// RUN PROGRAM 2 
 
-    // FINISH RUNNING PROGRAM 2
+
+//In assembly
+//nM:$t0 nL:$t1 d:$t2 rR:$t3 rM:$t4 rL:$t5
+//sB:$t6 inv:$t7 temp:$t8 rO:$t9 oFL:$t10 oFL:$11 cout:$cout
+// Initialize variables
+
+move 0 // acc = 0
+store 0 $t3 // rR = 0
+store 0 $t4 // rM = 0
+store 0 $t5 // rL = 0
+store 0 $t6 // sB = 0
+store 0 $t9 // rO = 0
+store 0 $t7
+store 0 $t11
+store 0 $cout // cout = 0
+
+move 2 // acc = 2
+store 0  $t2 // d = 2
+load 1  $t2 // acc = M[2]
+store 0  $t2 // d = M[2]
+sgt 0  0
+be FullDivZero
+load 0  $t2
+sgt 0  1
+be FullDivOne
+
+move 0 // acc = 0
+store 0  $t0 // nM = 0
+load 1  $t0 // acc = M[0]
+store 0  $t0 // nM = M[0]
+sgt 0  0
+store 0  $t8 // $t8 = (M[8] > 0)
+
+move 1 // acc = 1
+store 0  $t7 // inv = 1
+store 0  $t1 // nL = 1
+load 1  $t1 // acc = M[1]
+store 0  $t1 // nL = M[1]
+sgt 0  0
+
+FullSkipDivide:
+sor 1  $t8 // $acc = (nM > 0 || nL > 0)
+be FullPad // if input == $acc == 0  go return 0
+
+FullDivide:
+// Shift rR
+// rR = rR << 1
+load 0  $t3
+shift 0  1
+store 0  $t3
+
+// Shift inv
+// inv = inv << 1
+load 0  $t7
+shift 0  1
+store 0  $t7
+
+// if (inv >= d)
+FullSkipSubtract:
+// $t8 = (inv > d)
+load 0  $t7
+sgt 1  $t2
+store 0  $t8
+load 0  $t7
+seq 1  $t2 // $acc = (inv == d)
+sor 1  $t8 // $acc = (inv >= d)
+be FullIncrement
+
+FullSubtract:
+// inv = inv - d
+load 0  $t2
+neg
+add 1  $t7
+add 0  1
+store 0  $t7
+
+// rR = rR + 1
+load 0  $t3
+add 0  1
+store 0  $t3
+
+FullIncrement:
+// if (inv == 128 && sB == 6) prep mult
+move 1
+store 0  $t9
+shift 0  7
+seq 1  $t7
+store 0  $t8
+load 0  $t6
+seq 0  6
+sand 1  $t8
+bne FullRoundOff
+
+// sB = sB + 1
+move 0
+store 0  $t9
+load 0  $t6
+add 0  1
+store 0  $t6
+
+// while ( (8 > sB) && (inv > 0) )
+FullBackToDivide:
+// $t8 = (8 > sB)
+move 8
+sgt 1  $t6
+store 0  $t8
+
+load 0  $t7
+sgt 0  0 // $acc = (inv > 0)
+sand 1  $t8 // $acc = (8 > sB) && (inv > 0)
+bne FullDivide
+
+FullSkipPad:
+load 0  $t8
+be FullRoundOffCheck
+
+FullPad:
+// rR = rR << 1
+load 0  $t3
+shift 0  1
+store 0  $t3
+
+// sB = sB + 1
+load 0  $t6
+add 0  1
+store 0  $t6
+
+// while (8 > sB)
+FullBackToPad:
+move 8
+sgt 1  $t6
+bne FullPad
+
+// if (inv >= dL)
+FullRoundOffCheck:
+// $t8 = (inv > d)
+load 0  $t7
+shift 0  1
+sgt 1  $t2
+store 0  $t8
+load 0  $t7
+seq 1  $t2 // $acc = (inv == d)
+sor 1  $t8 // $acc = (inv >= d)
+be FullExit
+
+FullRoundOffFlag:
+move 1
+store 0 $t9
+
+// inv = rR
+load 0  $t3
+store 0  $t7
+move 0
+load 0 $t3
+
+FullMultiply:
+//FullSkipBorrow:
+// if (1 > nL)
+move  1
+sgt 1  $t1
+be FullSubtractDiv
+//FullBorrow:
+// nM = nM – 1
+move 1
+neg
+add 1  $t0
+add 0  1
+store 0  $t0
+
+FullSubtractDiv:
+// nL = nL - 1
+move 1
+neg
+add 1  $t1
+add 0  1
+store 0  $t1
+
+// rR = rR + inv
+load 0  $t3
+add 1  $t7
+store 0  $t3
+sgt 1  $t3
+bne FullNoOverflow
+
+// rL = rL + 1
+load 0  $t5
+add 0  1
+store 0  $t5
+sgt 1 $t3
+bne FullNoOverflow
+
+// rM = rM + 1
+load 0  $t4
+add 0  1
+store 0 $t4
+
+FullNoOverflow:
+// if ( (nM > 0) || (nL > 0) )
+load 0  $t0
+sgt 0  0
+store 0  $t8
+load 0  $t1
+sgt 0  0
+sor 1  $t8
+bne FullMultiply
+
+FullRoundOff:
+// if (rO == 1)
+load 0  $t9
+seq 0  1
+be FullExit
+
+// rR = rR + 1
+load 0  $t3
+add 0  1
+store 0  $t3
+
+FullExit:
+// M[4] = rM
+move 4
+store 0  $t8
+load 0  $t4
+store 1  $t8
+// M[5] = rL
+move 5
+store 0  $t8
+load 0  $t5
+store 1  $t8
+// M[6] = rR
+move 6
+store 0  $t8
+load 0  $t3
+store 1  $t8
+halt
+
+FullDivZero:
+// M[4] = M[5] = M[6] = 0
+move 4
+store 0  $t4
+add 0  1
+store 0  $t5
+add 0  1
+store 0  $t3
+move 0
+neg
+store 1  $t4
+store 1  $t5
+store 1  $t3
+halt
+
+FullDivOne:
+// M[4] = M[0] = nM
+move 4
+store 0  $t4
+move 0
+store 0  $t0
+load 1  $t0
+store 1  $t4
+// M[5] = M[1] = nL
+move 5
+store 0  $t5
+move 1
+store 0  $t1
+load 1  $t1
+store 1  $t5
+// M[6] = rR = 0
+move 6
+store 0  $t8
+load 0  $t3
+store 1  $t8
+halt
+
+
+//////////////////////////////////////////////////////////////////////////////
+// FINISH RUNNING PROGRAM 2
 
     // RESTORE registers
         // restore divisor($t2)
