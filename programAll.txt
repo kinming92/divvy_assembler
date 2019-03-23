@@ -373,7 +373,6 @@ bne FullPad
 FullRoundOffCheck:
 // $t8 = (inv > d)
 load 0  $t7
-shift 0  1
 sgt 1  $t2
 store 0  $t8
 load 0  $t7
@@ -507,4 +506,656 @@ store 0  $t8
 load 0  $t3
 store 1  $t8
 halt
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+// PROGRAM 3 STARTS HERE
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+// // BASIC IDEA
+// int number;
+// int divisor = 0;
+// float quotient = FLOAT_MAX;
+// char prevQuotient;
+// char prevDivisor;
+// do {
+// 		prevQuotient = quotient
+//  	prevDivisor = divisor;
+// 		divisor++;
+// 		quotient = divide(number, divisor);
+// } while (quotient > divisor) 
+// return (divisor-quotient) >= (prevQuotient - prevDivisor) ? prevDivisor : divisor;
+
+
+// // C-code with an input represented in two separate parsts; most significant and least significant 8 bits
+// // char is 1 byte (8 bits)
+// char mostSig, leastSig; 
+// char divisor;
+// char mostSigQuotient, leastSigQuotient, decimalPtQuotient = 0xFF;
+// char prevMostSigQuotient, prevLeastSigQuotient, prevDecimalPtQuotient;
+// 
+// divisor = 1;
+// do {
+//      // overflow happened!
+//      if (divisor == 0) return 0xFF
+//      prevMostSigQuotient = mostSigQuotient;
+//      prevLeastSigQuotient = leastSigQuotient;
+//      prevDecimalPtQuotient = decimalPtQuotient;
+//      mostSigQuotient, leastSigQuotient, decimalQuotient = divide(mostSig, leastSig, divisor);
+//      divisor++;
+// } while (mostSigQuotient > 0 || 
+//          leastSigQuotient > divisor || 
+//          (leastSigQuotient == divisor && decimalPtQuotient > 0) );
+//
+// char leastSigDiff;
+// char prevLeastSigDiff;
+// char prevDivisor = divisor-1;
+// char borrowOut;
+// char borrowIn;
+//
+// if (decimalPtQuotient > 0) borrowOut = 1;
+// else borrowOut = 0;
+// leastSigDiff = divisor - leastSigQuotient - borrowOut;
+//
+// if (prevDecimalPtQuotient > 0) borrowIn = 1;
+// else borrowIn = 0;
+// prevLeastSigDiff = prevLeastSigQuotient - prevDivisor + borrowIn;
+// 
+// if (prevLeastSigDiff >= leastSigDiff)
+//     return divisor;
+// else
+//     return prevDivisor;
+
+// Register / Memory mapping
+// divisor:                 $t2     M[22]
+// mostSigQuotient:         $t3     M[23]
+// leastSigQuotient:        $t4     M[24]
+// decimalPtQuotient:       $t5     M[25]
+// prevMostSigQuotient:     $t6     M[26]
+// prevLeastSigQuotient:    $t7     M[27]
+// prevDecimalPtQuotient:   $t8     M[28]
+// leastSigDiff:            $t0     M[20]
+// prevLeastSigDiff:        $t1     M[21]
+// prevDivisor:             $t3     M[23]
+// borrowOut:               $t6     M[26]
+// borrowIn:                $t6     M[26]
+
+
+// divisor = 1
+move    1
+store   0   $t2
+
+// mostSigQuotient($t3) = 0xFF
+move    0
+neg     
+store   0   $t3  
+
+// leastSigQuotient($t4) = 0xFF
+move    0
+neg     
+store   0   $t4
+
+// decimalPtQuotient($t5) = 0xFF
+move    0
+neg     
+store   0   $t5
+
+// SET PARAMETER FOR PROGRAM 2
+// M[0] = M[16](mostSig)
+move    0
+store   0   $t10
+move    16
+store   0   $t11
+load    1   $t11
+store   1   $t10
+
+// M[1] = M[17](leastSig)
+move    1
+store   0   $t10
+move    17
+store   0   $t11
+load    1   $t11
+store   1   $t10
+
+DoWhile:
+
+    // overflow detected
+    // if (divisor($t2) == 0) return 0xFF
+        move    0
+        seq     1   $t2
+        be     Continue
+        // M[18] = 0xFF
+        move    18
+        store   0   $t10
+        move    0
+        neg
+        store   1   $t10
+        halt
+    
+    Continue:
+
+    // prevMostSigQuotient($t6) = mostSigQuotient($t3);
+    load    0   $t3
+    store   0   $t6
+
+    // prevLeastSigQuotient($t7) = leastSigQuotient($t4);
+    load    0   $t4
+    store   0   $t7
+
+    // prevDecimalPtQuotient($t8) = decimalPtQuotient($t5);
+    load    0   $t5
+    store   0   $t8
+
+    // SAVE REGISTER INTO MEMORY before running program 2
+        // save divisor($t2)
+        move    22
+        store   0   $t10
+        load    0   $t2
+        store   1   $t10
+
+        // save prevMostSigQuotient($t6)
+        move    26
+        store   0   $t10
+        load    0   $t6
+        store   1   $t10
+
+        // save prevLeastSigQuotient($t7)
+        move    27
+        store   0   $t10
+        load    0   $t7
+        store   1   $t10
+
+        // save prevDecimalPtQuotient($t8)
+        move    28
+        store   0   $t10
+        load    0   $t8
+        store   1   $t10
+
+    // Set divisor as a aparameter of Program2
+    // M[2] = divisor($t2)
+    move    2
+    store   0   $t10
+    load    0   $t2
+    store   1   $t10
+    
+//////////////////////////////////////////////////////////////////////////////
+// RUN PROGRAM 2 
+
+
+//In assembly
+//nM:$t0 nL:$t1 d:$t2 rR:$t3 rM:$t4 rL:$t5
+//sB:$t6 inv:$t7 temp:$t8 rO:$t9 oFL:$t10 oFL:$11 cout:$cout
+// Initialize variables
+
+move 0 // acc = 0
+store 0 $t3 // rR = 0
+store 0 $t4 // rM = 0
+store 0 $t5 // rL = 0
+store 0 $t6 // sB = 0
+store 0 $t9 // rO = 0
+store 0 $t7
+store 0 $t11
+store 0 $cout // cout = 0
+
+move 2 // acc = 2
+store 0  $t2 // d = 2
+load 1  $t2 // acc = M[2]
+store 0  $t2 // d = M[2]
+sgt 0  0
+be FullDivZero_
+load 0  $t2
+sgt 0  1
+be FullDivOne_
+
+move 0 // acc = 0
+store 0  $t0 // nM = 0
+load 1  $t0 // acc = M[0]
+store 0  $t0 // nM = M[0]
+sgt 0  0
+store 0  $t8 // $t8 = (M[8] > 0)
+
+move 1 // acc = 1
+store 0  $t7 // inv = 1
+store 0  $t1 // nL = 1
+load 1  $t1 // acc = M[1]
+store 0  $t1 // nL = M[1]
+sgt 0  0
+
+FullSkipDivide_:
+sor 1  $t8 // $acc = (nM > 0 || nL > 0)
+be FullPad_ // if input == $acc == 0  go return 0
+
+FullDivide_:
+// Shift rR
+// rR = rR << 1
+load 0  $t3
+shift 0  1
+store 0  $t3
+
+// Shift inv
+// inv = inv << 1
+load 0  $t7
+shift 0  1
+store 0  $t7
+
+// if (inv >= d)
+FullSkipSubtract_:
+// $t8 = (inv > d)
+load 0  $t7
+sgt 1  $t2
+store 0  $t8
+load 0  $t7
+seq 1  $t2 // $acc = (inv == d)
+sor 1  $t8 // $acc = (inv >= d)
+be FullIncrement_
+
+FullSubtract_:
+// inv = inv - d
+load 0  $t2
+neg
+add 1  $t7
+add 0  1
+store 0  $t7
+
+// rR = rR + 1
+load 0  $t3
+add 0  1
+store 0  $t3
+
+FullIncrement_:
+// if (inv == 128 && sB == 6) prep mult
+move 1
+store 0  $t9
+shift 0  7
+seq 1  $t7
+store 0  $t8
+load 0  $t6
+seq 0  6
+sand 1  $t8
+bne FullRoundOff_
+
+// sB = sB + 1
+move 0
+store 0  $t9
+load 0  $t6
+add 0  1
+store 0  $t6
+
+// while ( (8 > sB) && (inv > 0) )
+FullBackToDivide_:
+// $t8 = (8 > sB)
+move 8
+sgt 1  $t6
+store 0  $t8
+
+load 0  $t7
+sgt 0  0 // $acc = (inv > 0)
+sand 1  $t8 // $acc = (8 > sB) && (inv > 0)
+bne FullDivide_
+
+FullSkipPad_:
+load 0  $t8
+be FullRoundOffCheck_
+
+FullPad_:
+// rR = rR << 1
+load 0  $t3
+shift 0  1
+store 0  $t3
+
+// sB = sB + 1
+load 0  $t6
+add 0  1
+store 0  $t6
+
+// while (8 > sB)
+FullBackToPad_:
+move 8
+sgt 1  $t6
+bne FullPad_
+
+// if (inv >= dL)
+FullRoundOffCheck_:
+// $t8 = (inv > d)
+load 0  $t7
+shift 0  1
+sgt 1  $t2
+store 0  $t8
+load 0  $t7
+seq 1  $t2 // $acc = (inv == d)
+sor 1  $t8 // $acc = (inv >= d)
+be FullExit_
+
+FullRoundOffFlag_:
+move 1
+store 0 $t9
+
+// inv = rR
+load 0  $t3
+store 0  $t7
+move 0
+load 0 $t3
+
+FullMultiply_:
+//FullSkipBorrow:
+// if (1 > nL)
+move  1
+sgt 1  $t1
+be FullSubtractDiv_
+//FullBorrow:
+// nM = nM – 1
+move 1
+neg
+add 1  $t0
+add 0  1
+store 0  $t0
+
+FullSubtractDiv_:
+// nL = nL - 1
+move 1
+neg
+add 1  $t1
+add 0  1
+store 0  $t1
+
+// rR = rR + inv
+load 0  $t3
+add 1  $t7
+store 0  $t3
+sgt 1  $t3
+bne FullNoOverflow_
+
+// rL = rL + 1
+load 0  $t5
+add 0  1
+store 0  $t5
+sgt 1 $t3
+bne FullNoOverflow_
+
+// rM = rM + 1
+load 0  $t4
+add 0  1
+store 0 $t4
+
+FullNoOverflow_:
+// if ( (nM > 0) || (nL > 0) )
+load 0  $t0
+sgt 0  0
+store 0  $t8
+load 0  $t1
+sgt 0  0
+sor 1  $t8
+bne FullMultiply_
+
+FullRoundOff_:
+// if (rO == 1)
+load 0  $t9
+seq 0  1
+be FullExit_
+
+// rR = rR + 1
+load 0  $t3
+add 0  1
+store 0  $t3
+
+FullExit_:
+// M[4] = rM
+move 4
+store 0  $t8
+load 0  $t4
+store 1  $t8
+// M[5] = rL
+move 5
+store 0  $t8
+load 0  $t5
+store 1  $t8
+// M[6] = rR
+move 6
+store 0  $t8
+load 0  $t3
+store 1  $t8
+move 	0 
+be 		EndP2
+
+FullDivZero_:
+// M[4] = M[5] = M[6] = 0
+move 4
+store 0  $t4
+add 0  1
+store 0  $t5
+add 0  1
+store 0  $t3
+move 0
+neg
+store 1  $t4
+store 1  $t5
+store 1  $t3
+move 	0 
+be 		EndP2
+
+FullDivOne_:
+// M[4] = M[0] = nM
+move 4
+store 0  $t4
+move 0
+store 0  $t0
+load 1  $t0
+store 1  $t4
+// M[5] = M[1] = nL
+move 5
+store 0  $t5
+move 1
+store 0  $t1
+load 1  $t1
+store 1  $t5
+// M[6] = rR = 0
+move 6
+store 0  $t8
+load 0  $t3
+store 1  $t8
+move 	0 
+be 		EndP2
+
+EndP2:
+//////////////////////////////////////////////////////////////////////////////
+// FINISH RUNNING PROGRAM 2
+
+    // RESTORE registers
+        // restore divisor($t2)
+        move    22
+        store   0   $t10
+        load    1   $t10
+        store   0   $t2
+
+        // restore prevMostSigQuotient($t6)
+        move    26
+        store   0   $t10
+        load    1   $t10
+        store   0   $t6
+
+        // restore revLeastSigQuotient($t7)
+        move    27
+        store   0   $t10
+        load    1   $t10
+        store   0   $t7
+
+        // restore revDecimalPtQuotient($t8)
+        move    28
+        store   0   $t10
+        load    1   $t10
+        store   0   $t8
+
+    // store result from program 2
+        // mostSigQuotient($t3) = M[4]
+        move    4
+        store   0   $t10
+        load    1   $t10
+        store   0   $t3
+
+        // leastSigQuotient($t4) = M[5]
+        move    5
+        store   0   $t10
+        load    1   $t10
+        store   0   $t4
+
+        // decimalQuotient($t5) = M[6]
+        move    6
+        store   0   $t10
+        load    1   $t10
+        store   0   $t5
+
+    // divisor++
+    load    0   $t2
+    add     0   1
+    store   0   $t2
+ 
+// } while (mostSigQuotient > 0 || 
+//          leastSigQuotient > divisor || 
+//          (leastSigQuotient == divisor && decimalPtQuotient > 0) );
+        // if (mostSigQuotient($t3) > 0) jump to DoWhile
+        load    0   $t3
+        sgt     0   0
+        bne     DoWhile
+
+        // if (leastSigQuotient($t4) > divisor($t2)) jump to DoWhile
+        load    0   $t4
+        sgt     1   $t2
+        bne     DoWhile
+        
+        // if (leastSigQuotient == divisor && decimalPtQuotient > 0) jump to DoWhile
+            // $t10 = (leastSigQuotient($t4) == divisor($t2))
+            load    0   $t4
+            seq     1   $t2
+            store   0   $t10
+
+            // $t11 = (decimalPtQuotient($t5) > 0)
+            load    0   $t5
+            sgt     0   0
+            store   0   $t11
+            
+            // if ($t10 & $t11) jump to DoWhile
+            load    0   $t10
+            sand    1   $t11
+            bne     DoWhile
+
+// prevDivisor($t3) = -1 + divisor($t2);
+move    1
+neg
+add     0   1
+add     1   $t2
+store   0   $t3
+
+// if (decimalPtQuotient($t5) > 0) borrowOut($t6) = 1;
+    load    0   $t5
+    sgt     0   0
+    be     Else1
+    move    1
+    store   0   $t6
+    move    0
+    be      End1
+
+// else borrowOut($t6) = 0;
+Else1:
+    move    0
+    store   0   $t6
+
+End1:
+// leastSigDiff($t0) = divisor($t2) - leastSigQuotient($t4) - borrowOut($t6);
+    // leastSigDiff($t0) = divisor($t2)
+    load    0   $t2
+    store   0   $t0
+
+    // leastSigQuotient($t4) = -leastSigQuotient($t4)
+    load    0   $t4
+    neg
+    add     0   1
+    store   0   $t4
+    
+    // borrowOut($t6) = -borrowOut($t6)
+    load    0   $t6
+    neg
+    add     0   1
+    store   0   $t6       
+    
+    // leastSigDiff($t0) += leastSigQuotient($t4)
+    load    0   $t0
+    add     1   $t4
+    store   0   $t0
+    
+    // leastSigDiff($t0) += borrwoOut($t6)
+    load    0   $t0
+    add     1   $t6
+    store   0   $t0
+
+
+// if (prevDecimalPtQuotient($t8) > 0) borrowIn($t6) = 1;
+    load    0   $t8
+    sgt     0   0
+    be     Else2
+    move    1
+    store   0   $t6
+    move    0
+    be      End2
+
+// else borrowIn($t6) = 0;
+Else2:
+    move    0
+    store   0   $t6
+
+End2:
+
+// prevLeastSigDiff($t1) = prevLeastSigQuotient($t7) - prevDivisor($t3) + borrowIn($t6);
+    // prevLeastSigDiff($t1) = prevLeastSigQuotient($t7)
+    load    0   $t7
+    store   0   $t1
+
+    // prevDivisor($t3) = -prevDivisor($t3)
+    load    0   $t3
+    neg
+    add     0   1
+    store   0   $t3
+    
+    // prevLeastSigDiff($t1) += prevDivisor($t3)
+    load    0   $t1
+    add     1   $t3
+    store   0   $t1
+    
+	// prevDivisor($t3) = -prevDivisor($t3)
+    load    0   $t3
+    neg
+    add     0   1
+    store   0   $t3
+	
+    // prevLeastSigDiff($t1) += borrwoIn($t6)
+    load    0   $t1
+    add     1   $t6
+    store   0   $t1
+
+
+// if (prevLeastSigDiff($t1) >= leastSigDiff($t0)) return divisor($t2);
+    load    0   $t1
+    sgt     1   $t0
+    be     Else3
+    seq     1   $t0
+    be     Else3
+    // M[18] = divisor($t2)
+    move    18
+    store   0   $t10
+    load    0   $t2
+    store   1   $t10
+    move    0
+    be      Exit
+
+// else return prevDivisor($t3);
+Else3:
+    // M[18] = prevDivisor($t3)
+    move    18
+    store   0   $t10
+    load    0   $t3
+    store   1   $t10
+
+Exit:
+halt
+
 
