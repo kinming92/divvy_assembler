@@ -113,9 +113,8 @@ DoWhile:
         // M[18] = 0xFF
         move    18
         store   0   $t10
-        move    15
-        shift   0   4
-        sor     0   15
+        move    0
+        neg
         store   1   $t10
         halt
     
