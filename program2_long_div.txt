@@ -1,4 +1,169 @@
-//16/32/8 bit variable
+/////////////////////////////////////////////////////////////////////
+//8bit variable
+/////////////////////////////////////////////////////////////////////
+
+#include <iostream>
+#include <bitset>
+#include <stdint.h>
+
+using namespace std;
+int main() {
+//16 bit dividend
+uint8_t Mdividend = 0xde;
+uint8_t Ldividend = 0xca;
+
+//8 bit divisor
+uint8_t divisor = 0xcc;
+
+//16 bit quotient and 8 bit decimal point
+uint8_t Mquotient = 0;
+uint8_t Lquotient = 0;
+uint8_t quot_dp = 0;
+
+
+uint8_t Mdividend_cp = Mdividend;
+uint8_t Ldividend_cp = Ldividend;
+uint8_t divisor_cp_2 = divisor;
+uint8_t divisor_cp_1 = 0;
+uint8_t divisor_cp_0 = 0;
+
+uint8_t temp;
+uint8_t temp2;
+
+if(divisor == 0){
+  Mquotient = 0xff;
+  Lquotient = 0xff;
+  quot_dp = 0xff;
+  cout << "dividend: "<< bitset<8>(Mdividend) << " " << bitset<8>(Ldividend) <<endl;
+  cout << "divisor: "<< bitset<8>(divisor)    <<endl;
+  cout << "quotient: "<< bitset<8>(Mquotient) << " " << bitset<8>(Lquotient) <<endl;
+  cout << "quotientdp: " << bitset<8>(quot_dp) <<endl;
+  return 0;
+  
+}
+
+while(  (divisor_cp_2 > 0) 
+        ||	(divisor_cp_1 > 0)
+        ||	(divisor_cp_0 >= divisor)	)
+{
+  
+  if(	divisor_cp_2 > 0 
+		|| divisor_cp_1 > Mdividend_cp
+		|| (divisor_cp_1 == Mdividend_cp && divisor_cp_0 > Ldividend_cp)	)
+  
+  {
+    //quotient <<= 1;
+    //save the MSB of Lquotient
+    int temp = Lquotient & 0x80;
+    temp >>= 7;
+    Lquotient <<= 1;
+    Mquotient <<= 1;
+    Mquotient |= temp;
+    
+  }else{
+    //quotient <<= 1;
+    
+    temp = Lquotient & 0x80;
+    temp >>= 7;
+    Lquotient <<= 1;
+    Mquotient <<= 1;
+    Mquotient |= temp;
+
+    //quotient |= 1;
+    Lquotient |= 1;
+    //divd -= divs;
+    if ( Ldividend_cp < divisor_cp_0 ){
+      temp = 0x01;
+      temp = ~(temp);
+      Mdividend_cp = Mdividend_cp + temp;
+      Mdividend_cp = Mdividend_cp + 1;
+    }
+    
+    temp = divisor_cp_0;
+    temp = ~ ( divisor_cp_0 );
+    Ldividend_cp = Ldividend_cp + temp;
+    Ldividend_cp = Ldividend_cp + 1;
+    
+    temp = ~( divisor_cp_1);
+    Mdividend_cp = Mdividend_cp + temp;
+    Mdividend_cp = Mdividend_cp + 1;
+  } //end of else
+	  
+  //divs >>= 1;
+  temp = divisor_cp_2 & 0x01;
+  temp <<= 7;
+  divisor_cp_2 >>= 1;
+	
+	temp2 = divisor_cp_1 & 0x01;
+	temp2 <<= 7;
+	divisor_cp_1 >>= 1;
+	divisor_cp_1 |= temp;
+	
+	divisor_cp_0 >>= 1;
+	divisor_cp_0 |= temp2;
+
+}
+  
+if (Mdividend_cp == 0 && Ldividend_cp == 0){
+  std::cout<<"no remainder"<< std::endl;
+  std::cout<<"store the decimalpoint back to the data mem"<< std::endl;
+}
+
+int i = 0;
+while (i<8){
+  //cout << "dividend_cp: "<< bitset<8>(Mdividend_cp) << " " << bitset<8>(Ldividend_cp) <<endl;
+  //dividend_cp <<= 1;
+  temp = Ldividend_cp & 0x80;
+  temp >>= 7;
+  Ldividend_cp <<= 1;
+  Mdividend_cp <<= 1;
+  Mdividend_cp |= temp;
+  //cout << "temp: " << bitset<8>(temp) <<endl;
+  // cout << "Before::::dividend_cp: "<< bitset<8>(Mdividend_cp) << " " << bitset<8>(Ldividend_cp) <<endl;
+  //dividend_cp >= divisor
+  if( (Mdividend_cp > 0) ||  Ldividend_cp >= divisor){
+	// quotient_dp <<= 1
+	quot_dp <<= 1;
+	quot_dp |= 1;
+  //cout << "Before - \t";
+  //cout << "dividend_cp: "<< bitset<8>(Mdividend_cp) << " " << bitset<8>(Ldividend_cp) <<endl;
+	// dividend_cp -= divisor
+	if ( Ldividend_cp < divisor ){
+      temp = 0x01;
+      temp = ~(temp);
+      Mdividend_cp = Mdividend_cp + temp;
+      Mdividend_cp = Mdividend_cp + 1;
+    }
+    
+    temp = divisor;
+    temp = ~ ( divisor );
+    Ldividend_cp = Ldividend_cp + temp;
+    Ldividend_cp = Ldividend_cp + 1;
+    
+    temp = ~(0);
+    Mdividend_cp = Mdividend_cp + temp;
+    Mdividend_cp = Mdividend_cp + 1;
+
+  //cout << "After - \t";
+  //cout << "dividend_cp: "<< bitset<8>(Mdividend_cp) << " " << bitset<8>(Ldividend_cp) <<endl;
+  
+  }else{
+	  quot_dp <<= 1;
+  }
+  
+  i++;
+}
+
+
+
+
+cout << "dividend: "<< bitset<8>(Mdividend) << " " << bitset<8>(Ldividend) <<endl;
+cout << "divisor: "<< bitset<8>(divisor)    <<endl;
+cout << "quotient: "<< bitset<8>(Mquotient) << " " << bitset<8>(Lquotient) <<endl;
+cout << "quotientdp: " << bitset<8>(quot_dp) <<endl;
+}
+/////////////////////////////////////////////////////////////////////////////
+//two while loop
 
 #include <iostream>
 #include <stdint.h>
@@ -9,16 +174,14 @@ using namespace std;
 int main()
 {
   uint16_t rem = 0;
-  uint16_t dividend = 40;
+  uint16_t dividend = 0xdeed;
   uint16_t quotient = 0;
   uint8_t quotientdp = 0;
-  uint8_t divisor =  4;
+  uint8_t divisor =  0xba;
 
   uint32_t divs = divisor;
   uint16_t divd = dividend;
   divs = divs << 16;
-  cout << "div: "<<  bitset<32>(divs) << endl;
-  cout <<"divd: "<< bitset<16>(divd) << endl;
  
 while( divs >= divisor ){
 	if ( divs > divd ){
@@ -36,157 +199,77 @@ if (divd == 0){
   cout<<"no remainder"<<endl;
   cout<<"store the decimalpoint back to the data mem"<<endl;
 }
-cout << "rem: "<< bitset<16>(rem) <<endl;
+
 int i = 0;
 while (i<8){
+  //cout << "rem: " << bitset<16>(rem) << endl;
   rem <<= 1;
   if(rem >= divisor){
-	  cout << "rem_while: "<< bitset<16>(rem) <<endl;
+
 	  quotientdp <<= 1;
 	  quotientdp |= 1;
+    //cout << "Before - \t";
+   // cout << "rem: " << bitset<16>(rem) << endl;
 	  rem -= divisor;
+    //cout << "after - \t";
+    //cout << "rem: " << bitset<16>(rem) << endl;
   }else{
-	  cout << "r_while: "<< bitset<16>(rem) <<endl;
 	  quotientdp <<= 1;
   }
   i++;
 }
-
+	cout << "dividend: "<< bitset<16>(dividend)  <<endl;
 	cout << "divisor: "<< bitset<8>(divisor) <<endl;
 	cout << "quotient: "<< bitset<16>(quotient) <<endl;
-	cout << "dividend: "<< bitset<16>(dividend)  <<endl;
-	cout << "remainder: "<< bitset<16>(rem) <<endl;
 	cout << "quotientdp: " << bitset<8>(quotientdp) <<endl;
 
 
 
 }
 
+//////////////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////
-//8bit variable
+
+
+
+
+//16/32/8 bit variable
+
+//one while loop
+
 #include <iostream>
-#include <bitset>
 #include <stdint.h>
+#include <bitset>
 
 using namespace std;
-int main() {
-//16 bit dividend
-uint8_t Mdividend = 0x00;
-uint8_t Ldividend = 0x04;
 
-//8 bit divisor
-uint8_t divisor = 0x02;
+int main()
+{
+  uint16_t rem = 0;
+  uint16_t dividend = 0x01;
+  uint32_t quotient = 0;
+  uint8_t quotientdp = 0;
+  uint8_t divisor =  0x3;
 
-//16 bit quotient and 8 bit decimal point
-uint8_t Mquotient = 0;
-uint8_t Lquotient = 0;
-uint8_t quot_dp = 0;
-
-
-uint8_t Mdividend_cp = Mdividend;
-uint8_t Ldividend_cp = Ldividend;
-uint8_t divisor_cp_2 = 0;
-uint8_t divisor_cp_1 = 0;
-uint8_t divisor_cp_0 = 0;
-
-uint8_t temp;
-
-while( (Mdivisor_cp > Mdivisor) || (Mdivisor_cp == Mdivisor && Ldivisor_cp >= Ldivisor) ){
-  
-  if((Mdivisor_cp > Mdividend_cp) || (Mdivisor_cp == Mdividend_cp && Ldivisor_cp > Ldividend_cp)){
-    //quotient <<= 1;
-    //save the MSB of Lquotient
-    int temp = Lquotient & 0x80;
-    temp >>= 7;
-    Lquotient <<= 1;
-    Mquotient <<= 1;
-    Mquotient |= temp;
-    
-  }else{
-    //quotient <<= 1;
-    
-    temp = Lquotient & 0x80;
-    Lquotient <<= 1;
-    Mquotient <<= 1;
-    Mquotient |= temp;
-
-    //quotient |= 1;
-    Lquotient |= 1;
-    //divd -= divs;
-    if ( Ldividend_cp < Ldivisor_cp ){
-      temp = 0x01;
-      temp = ~(temp);
-      Mdividend_cp = Mdividend_cp + temp;
-      Mdividend_cp = Mdividend_cp + 1;
-    }
-    
-    temp = Ldivisor_cp;
-    temp = ~ ( Ldivisor_cp );
-    Ldividend_cp = Ldividend_cp + temp;
-    Ldividend_cp = Ldividend_cp + 1;
-    
-    temp = ~( Mdivisor_cp);
-    Mdividend_cp = Mdividend_cp + temp;
-    Mdividend_cp = Mdividend_cp + 1;
-  } //end of else
-	  
-  	//divs >>= 1;
-    temp = Mdivisor_cp & 0x01;
-    temp <<= 7;
-    Mdivisor_cp >>= 1;
-    Ldivisor_cp >>= 1;
-    Ldivisor_cp |= temp;
-
-}
-  
-if (Mdividend_cp == 0 && Ldividend_cp == 0){
-  std::cout<<"no remainder"<< std::endl;
-  std::cout<<"store the decimalpoint back to the data mem"<< std::endl;
-}
-
-int i = 0;
-while (i<8){
-  //dividend_cp <<= 1;
-  temp = Ldividend_cp & 0x80;
-  temp <<= 7;
-  Ldividend_cp <<= 1;
-  Mdividend_cp <<= 1;
-  Mdividend_cp |= temp;
-  
-  //dividend_cp > divisor
-  if( (Mdividend_cp > Mdivisor) || ((Ldividend_cp == Ldivisor) && (Ldividend_cp > Ldivisor))){
-	// quotient_dp <<= 1
-	quot_dp <<= 1;
-	quot_dp |= 1;
-	  
-	// dividend_cp -= divisor
-	if ( Ldividend_cp < Ldivisor_cp ){
-      temp = 0x01;
-      temp = ~(temp);
-      Mdividend_cp = Mdividend_cp + temp;
-      Mdividend_cp = Mdividend_cp + 1;
-    }
-    
-    temp = Ldivisor_cp;
-    temp = ~ ( Ldivisor_cp );
-    Ldividend_cp = Ldividend_cp + temp;
-    Ldividend_cp = Ldividend_cp + 1;
-    
-    temp = ~( Mdivisor_cp);
-    Mdividend_cp = Mdividend_cp + temp;
-    Mdividend_cp = Mdividend_cp + 1;
-  }else{
-	  quot_dp <<= 1;
-  }
-  i++;
-}
-
-
-
-
-cout << "dividend: "<< bitset<8>(Mdividend) << " " << bitset<8>(Ldividend) <<endl;
-cout << "divisor: "<< bitset<8>(Mdivisor)   << " " << bitset<8>(Ldivisor) <<endl;
-cout << "quotient: "<< bitset<8>(Mquotient) << " " << bitset<8>(Lquotient) <<endl;
-cout << "quotientdp: " << bitset<8>(quot_dp) <<endl;
+  uint32_t divs = divisor;
+  uint32_t divd = dividend;
+  divd <<= 8;
+  divs = divs << 24;
+  //cout << "div: "<<  bitset<32>(divs) << endl;
+  //cout <<"divd: "<< bitset<16>(divd) << endl;
+ 
+ int j = 0;
+while( j<24 ){
+	if ( divs > divd ){
+    	quotient <<= 1;
+	}
+	else {
+    	quotient <<= 1;
+    	quotient |= 1;
+    	divd -= divs;
+	}
+    	divs >>= 1;
+      j++;
+      //cout << "divs: " << bitset<32>(divs) << endl;
+      //cout << "divd: " << "----------------" << bitset<16>(divd) << endl;
 }
