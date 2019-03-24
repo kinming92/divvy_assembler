@@ -245,13 +245,13 @@ using namespace std;
 int main()
 {
   uint16_t rem = 0;
-  uint16_t dividend = 0xb1aa;
-  uint32_t quotient = 0;
+  uint16_t dividend = 0x1;
+  uint32_t quotient = 0; //quotient should be 24 bit
   uint8_t quotientdp = 0;
-  uint8_t divisor =  0xad;
+  uint8_t divisor =  0xff;
 
-  uint32_t divs = divisor;
-  uint32_t divd = dividend;
+  uint32_t divs = divisor;  // we actually need 32 bit for this problem
+  uint32_t divd = dividend; // we actually need 16+8 bit for this problem
   divd <<= 8;
   divs = divs << 24;
   //cout << "div: "<<  bitset<32>(divs) << endl;
@@ -278,6 +278,7 @@ cout << "divisor: "<< bitset<8>(divisor) <<endl;
 cout << "quotient: "<< bitset<24>(quotient) <<endl;
 func(dividend, divisor);
 }
+
 
 
 void func(uint16_t n, uint8_t d){
