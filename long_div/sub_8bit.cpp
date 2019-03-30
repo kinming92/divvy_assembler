@@ -10,7 +10,7 @@
 using namespace std;
 
 int main() {
-  uint32_t a = 0x0d0a00;
+  uint32_t a = 0x00000d;
   uint32_t b = 0x00000c;
   uint32_t result;
 
@@ -20,8 +20,8 @@ int main() {
   cout << "result: "<< bitset<24>(result)<<endl;
 
   uint8_t a_0 = 0x00;
-  uint8_t a_1 = 0x0a;
-  uint8_t a_2 = 0x0d;
+  uint8_t a_1 = 0x00;
+  uint8_t a_2 = 0xd0;
 
   uint8_t b_0 = 0x0c;
   uint8_t b_1 = 0x00;
@@ -36,19 +36,24 @@ int main() {
   temp = ~(temp);
 
   //a - b
-  if ( a_0 <= b_0){
+  if( a_0 <= b_0){
     if(a_1 <= b_1){
-      if(b_2 == 0){
+      // no borrow out from a_1
+      if(b_1 != 0){
           a_2 = a_2 + temp;
           a_2 += 1;
         }
 
-      if(a_1 == 0){
+      if(a_1 != 0 || b_1 != 0){
         a_1 = ~a_1;
       }
+      
     }else{ // a_1 > b_1
-      a_1 = a_1 + temp;
-      a_1 += 1;      
+      //there is a borrow out from a_0
+      if( b_0 != 0){
+        a_1 = a_1 + temp;
+        a_1 += 1; 
+      }
     }
   }
   temp = ~ ( b_0 );
